@@ -128,7 +128,7 @@ export default async function AnalyticsPage() {
               {deptStats.map((d, i) => (
                 <div key={i} className="space-y-1">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-slate-700 truncate max-w-[180px]">{d.department_name}</span>
+                    <span className="font-medium text-slate-700 truncate max-w-45">{d.department_name}</span>
                     <div className="flex items-center gap-3 text-slate-500 text-xs shrink-0">
                       <span>{d.total_participants?.toLocaleString()} participants</span>
                       <span className="font-semibold text-slate-700">{d.total_events} events</span>

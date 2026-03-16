@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+    const bucketName = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'event-flyers';
     
     // Verify authentication
     const { data: { user } } = await supabase.auth.getUser();
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
-      .from('event-flyers')
+      .from(bucketName)
       .upload(filePath, buffer, {
         contentType: file.type,
         upsert: false,
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
-      .from('event-flyers')
+      .from(bucketName)
       .getPublicUrl(filePath);
 
     // Update event record (admin client bypasses RLS)
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       // Rollback: delete uploaded file
       await supabase.storage
-        .from('event-flyers')
+        .from(bucketName)
         .remove([filePath]);
       
       return NextResponse.json(

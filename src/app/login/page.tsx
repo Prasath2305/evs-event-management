@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -77,7 +78,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
@@ -168,9 +169,20 @@ function LoginForm() {
           </form>
         </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Department coordinators — use your credentials above.
-        </p>
+        <div className="text-center text-xs text-slate-400 mt-6 space-y-1">
+          <p>Department coordinators use the admin login above.</p>
+          <p>
+            General users can{' '}
+            <Link href="/signin" className="text-emerald-600 hover:underline font-medium">
+              Sign In
+            </Link>{' '}
+            or{' '}
+            <Link href="/signup" className="text-emerald-600 hover:underline font-medium">
+              Sign Up
+            </Link>
+            .
+          </p>
+        </div>
       </div>
     </div>
   );

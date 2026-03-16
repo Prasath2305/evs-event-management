@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient();
+  const bucketName = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'event-flyers';
   
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -24,13 +25,13 @@ export async function POST(request: NextRequest) {
     const filePath = `${fileName}`;
 
     const { error: uploadError } = await supabase.storage
-      .from('event-flyers')
+      .from(bucketName)
       .upload(filePath, file);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('event-flyers')
+      .from(bucketName)
       .getPublicUrl(filePath);
 
     // Update event with flyer URL

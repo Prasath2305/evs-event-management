@@ -1,23 +1,24 @@
 // src/hooks/useEvents.ts
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { endOfMonth, endOfWeek, format, startOfMonth, startOfWeek } from 'date-fns';
 import { createClient } from '@/lib/supabase/client';
 import { Event, EventFilters } from '@/types';
-import { filterEventsByDateRange } from '@/lib/utils/helpers';
 
 export function useEvents(initialFilters?: EventFilters) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-  
-  const supabase = createClient();
+
+  const supabase = useMemo(() => createClient(), []);
 
   const fetchEvents = useCallback(async (filters: EventFilters = {}, page: number = 1) => {
     try {
       setLoading(true);
-      
+      setError(null);
+
       let query = supabase
         .from('events')
         .select('*, departments(name, code)', { count: 'exact' })
@@ -32,7 +33,35 @@ export function useEvents(initialFilters?: EventFilters) {
       }
 
       if (filters.searchQuery) {
-        query = query.or(`name.ilike.%${filters.searchQuery}%,theme.ilike.%${filters.searchQuery}%,venue.ilike.%${filters.searchQuery}%`);
+        const safeSearch = filters.searchQuery.replace(/[%,()]/g, ' ').trim();
+        if (safeSearch) {
+          query = query.or(`name.ilike.%${safeSearch}%,theme.ilike.%${safeSearch}%,venue.ilike.%${safeSearch}%`);
+        }
+      }
+
+      if (filters.dateRange) {
+        const today = new Date();
+        const todayIso = format(today, 'yyyy-MM-dd');
+
+        if (filters.dateRange === 'this-week') {
+          const weekStart = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+          const weekEnd = format(endOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+          query = query.gte('date', weekStart).lte('date', weekEnd);
+        }
+
+        if (filters.dateRange === 'this-month') {
+          const monthStart = format(startOfMonth(today), 'yyyy-MM-dd');
+          const monthEnd = format(endOfMonth(today), 'yyyy-MM-dd');
+          query = query.gte('date', monthStart).lte('date', monthEnd);
+        }
+
+        if (filters.dateRange === 'upcoming') {
+          query = query.gte('date', todayIso);
+        }
+
+        if (filters.dateRange === 'past') {
+          query = query.lt('date', todayIso);
+        }
       }
 
       const from = (page - 1) * 9;
@@ -42,20 +71,16 @@ export function useEvents(initialFilters?: EventFilters) {
 
       if (supabaseError) throw supabaseError;
 
-      let filteredData = data || [];
-      
-      if (filters.dateRange) {
-        filteredData = filterEventsByDateRange(filteredData, filters.dateRange);
-      }
-
-      setEvents(filteredData as Event[]);
+      setEvents((data || []) as Event[]);
       setTotalCount(count || 0);
     } catch (err) {
+      setEvents([]);
+      setTotalCount(0);
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   return { events, loading, error, totalCount, fetchEvents };
 }

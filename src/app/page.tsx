@@ -68,21 +68,42 @@
 
 
 import Link from 'next/link';
-import { ArrowRight, Leaf, Calendar, BarChart3 } from 'lucide-react';
+import { ArrowRight, Leaf, Calendar, BarChart3, Users, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { createClient } from '@/lib/supabase/server';
 import { EventCard } from '@/components/events/EventCard';
 
 export default async function HomePage() {
   const supabase = await createClient();
-  
-  const { data: featuredEvents } = await supabase
-    .from('events')
-    .select('*, departments(name, code)')
-    .eq('is_featured', true)
-    .eq('status', 'upcoming')
-    .order('date', { ascending: true })
-    .limit(3);
+
+  const [
+    { data: featuredEvents },
+    { count: totalEvents },
+    { count: totalDepartments },
+    { data: participantRows },
+  ] = await Promise.all([
+    supabase
+      .from('events')
+      .select('*, departments(name, code)')
+      .eq('is_featured', true)
+      .eq('status', 'upcoming')
+      .order('date', { ascending: true })
+      .limit(3),
+    supabase.from('events').select('*', { count: 'exact', head: true }),
+    supabase.from('departments').select('*', { count: 'exact', head: true }),
+    supabase.from('events').select('actual_participants').eq('status', 'completed'),
+  ]);
+
+  const totalParticipants = (participantRows || []).reduce(
+    (sum, row) => sum + (row.actual_participants || 0),
+    0
+  );
+
+  const stats = [
+    { label: 'Events Hosted', value: (totalEvents || 0).toLocaleString(), icon: Calendar },
+    { label: 'Participants', value: totalParticipants.toLocaleString(), icon: Users },
+    { label: 'Departments', value: (totalDepartments || 0).toLocaleString(), icon: Building2 },
+  ];
 
   return (
     <div>
@@ -96,7 +117,7 @@ export default async function HomePage() {
         <div className="relative max-w-7xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 text-emerald-800 text-sm font-medium mb-6">
             <Leaf className="w-4 h-4" />
-            <span>Environmental Studies Department</span>
+            <span>{totalDepartments || 0} Departments Connected</span>
           </div>
           
           <h1 className="text-5xl sm:text-6xl font-bold text-slate-900 mb-6 tracking-tight">
@@ -147,11 +168,7 @@ export default async function HomePage() {
       {/* Stats Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { label: 'Events Hosted', value: '50+', icon: Calendar },
-            { label: 'Participants', value: '2000+', icon: 'Users' },
-            { label: 'Departments', value: '7', icon: 'Building' },
-          ].map((stat, idx) => (
+          {stats.map((stat, idx) => (
             <div key={idx} className="text-center p-6 rounded-2xl bg-white shadow-sm border border-emerald-100">
               <div className="text-4xl font-bold text-emerald-600 mb-2">{stat.value}</div>
               <div className="text-slate-600">{stat.label}</div>

@@ -194,7 +194,7 @@ export interface Database {
           id: string
           email: string
           full_name: string | null
-          role: 'admin' | 'super_admin'
+          role: 'user' | 'admin' | 'super_admin'
           department_id: string | null
           created_at: string
         }
@@ -202,7 +202,7 @@ export interface Database {
           id: string
           email: string
           full_name?: string | null
-          role?: 'admin' | 'super_admin'
+          role?: 'user' | 'admin' | 'super_admin'
           department_id?: string | null
           created_at?: string
         }
@@ -210,7 +210,7 @@ export interface Database {
           id?: string
           email?: string
           full_name?: string | null
-          role?: 'admin' | 'super_admin'
+          role?: 'user' | 'admin' | 'super_admin'
           department_id?: string | null
           created_at?: string
         }
