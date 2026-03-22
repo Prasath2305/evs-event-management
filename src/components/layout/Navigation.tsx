@@ -69,11 +69,13 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-            <Link href="/admin/events/create">
-              <Button size="sm" icon={Plus}>
-                Add Event
-              </Button>
-            </Link>
+            {isAuthenticated && (
+              <Link href="/admin/events/create">
+                <Button size="sm" icon={Plus}>
+                  Add Event
+                </Button>
+              </Link>
+            )}
             {isAuthenticated ? (
               <form action="/auth/signout" method="post">
                 <Button variant="ghost" size="sm" icon={LogOut}>
@@ -121,14 +123,16 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/admin/events/create"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-emerald-50 hover:text-emerald-600"
-              onClick={() => setIsOpen(false)}
-            >
-              <Plus className="w-4 h-4" />
-              Add Event
-            </Link>
+            {isAuthenticated && (
+              <Link
+                href="/admin/events/create"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-emerald-50 hover:text-emerald-600"
+                onClick={() => setIsOpen(false)}
+              >
+                <Plus className="w-4 h-4" />
+                Add Event
+              </Link>
+            )}
             {isAuthenticated ? (
               <form action="/auth/signout" method="post" className="px-3 py-2">
                 <button

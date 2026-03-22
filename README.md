@@ -1,3 +1,7 @@
+## Project Docs
+
+See [PROJECT_OVERVIEW.md](./PROJECT_OVERVIEW.md) for a full product and architecture overview of this repository.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
